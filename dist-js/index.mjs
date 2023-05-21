@@ -1,5 +1,6 @@
 import { Channel, invoke } from '@tauri-apps/api/tauri';
 
+// Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 class Update {
     constructor(response) {
         this.response = response;
