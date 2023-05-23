@@ -10,7 +10,9 @@ class Update {
         if (onEvent != null) {
             channel.onmessage = onEvent;
         }
-        return invoke("plugin:updater|download_and_install", { onEvent: channel });
+        return invoke("plugin:updater|download_and_install", {
+            onEvent: channel,
+        });
     }
 }
 async function check(options) {
