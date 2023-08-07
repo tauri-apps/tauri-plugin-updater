@@ -1,8 +1,9 @@
+/** Options used to check for updates */
 interface CheckOptions {
     /**
      * Request headers
      */
-    headers?: Record<string, unknown>;
+    headers?: HeadersInit;
     /**
      * Timeout in seconds
      */
@@ -12,13 +13,14 @@ interface CheckOptions {
      */
     target?: string;
 }
-interface UpdateResponse {
+interface UpdateMetadata {
     available: boolean;
     currentVersion: string;
-    latestVersion: string;
+    version: string;
     date?: string;
     body?: string;
 }
+/** Updater download event */
 type DownloadEvent = {
     event: "Started";
     data: {
@@ -33,10 +35,15 @@ type DownloadEvent = {
     event: "Finished";
 };
 declare class Update {
-    response: UpdateResponse;
-    constructor(response: UpdateResponse);
+    currentVersion: string;
+    version: string;
+    date?: string;
+    body?: string;
+    constructor(metadata: UpdateMetadata);
+    /** Downloads the updater package and installs it */
     downloadAndInstall(onEvent?: (progress: DownloadEvent) => void): Promise<void>;
 }
-declare function check(options?: CheckOptions): Promise<Update>;
-export type { CheckOptions, UpdateResponse, DownloadEvent };
+/** Check for updates, resolves to `null` if no updates are available */
+declare function check(options?: CheckOptions): Promise<Update | null>;
+export type { CheckOptions, DownloadEvent };
 export { check, Update };

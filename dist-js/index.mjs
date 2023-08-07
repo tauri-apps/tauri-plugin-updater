@@ -4,9 +4,13 @@ import { Channel, invoke } from '@tauri-apps/api/tauri';
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 class Update {
-    constructor(response) {
-        this.response = response;
+    constructor(metadata) {
+        this.currentVersion = metadata.currentVersion;
+        this.version = metadata.version;
+        this.date = metadata.date;
+        this.body = metadata.body;
     }
+    /** Downloads the updater package and installs it */
     async downloadAndInstall(onEvent) {
         const channel = new Channel();
         if (onEvent != null) {
@@ -17,8 +21,12 @@ class Update {
         });
     }
 }
+/** Check for updates, resolves to `null` if no updates are available */
 async function check(options) {
-    return invoke("plugin:updater|check", { ...options }).then((response) => new Update(response));
+    if (options === null || options === void 0 ? void 0 : options.headers) {
+        options.headers = Array.from(new Headers(options.headers).entries());
+    }
+    return invoke("plugin:updater|check", { ...options }).then((meta) => (meta.available ? new Update(meta) : null));
 }
 
 export { Update, check };
