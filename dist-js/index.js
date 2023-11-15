@@ -23,11 +23,10 @@ class Update {
 }
 /** Check for updates, resolves to `null` if no updates are available */
 async function check(options) {
-    if (options === null || options === void 0 ? void 0 : options.headers) {
+    if (options?.headers) {
         options.headers = Array.from(new Headers(options.headers).entries());
     }
     return invoke("plugin:updater|check", { ...options }).then((meta) => (meta.available ? new Update(meta) : null));
 }
 
 export { Update, check };
-//# sourceMappingURL=index.mjs.map
