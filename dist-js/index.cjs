@@ -7,6 +7,7 @@ var core = require('@tauri-apps/api/core');
 // SPDX-License-Identifier: MIT
 class Update {
     constructor(metadata) {
+        this.available = metadata.available;
         this.currentVersion = metadata.currentVersion;
         this.version = metadata.version;
         this.date = metadata.date;

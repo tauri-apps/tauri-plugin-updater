@@ -35,6 +35,7 @@ type DownloadEvent = {
     event: "Finished";
 };
 declare class Update {
+    available: boolean;
     currentVersion: string;
     version: string;
     date?: string;
