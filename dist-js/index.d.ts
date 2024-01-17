@@ -9,6 +9,10 @@ interface CheckOptions {
      */
     timeout?: number;
     /**
+     * A proxy url to be used when checking and downloading updates.
+     */
+    proxy?: string;
+    /**
      * Target identifier for the running application. This is sent to the backend.
      */
     target?: string;
