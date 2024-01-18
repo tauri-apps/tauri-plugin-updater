@@ -1,3 +1,4 @@
+import { Resource } from "@tauri-apps/api/core";
 /** Options used to check for updates */
 interface CheckOptions {
     /**
@@ -18,6 +19,7 @@ interface CheckOptions {
     target?: string;
 }
 interface UpdateMetadata {
+    rid: number;
     available: boolean;
     currentVersion: string;
     version: string;
@@ -38,7 +40,7 @@ type DownloadEvent = {
 } | {
     event: "Finished";
 };
-declare class Update {
+declare class Update extends Resource {
     available: boolean;
     currentVersion: string;
     version: string;

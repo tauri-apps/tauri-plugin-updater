@@ -5,8 +5,9 @@ var core = require('@tauri-apps/api/core');
 // Copyright 2019-2023 Tauri Programme within The Commons Conservancy
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
-class Update {
+class Update extends core.Resource {
     constructor(metadata) {
+        super(metadata.rid);
         this.available = metadata.available;
         this.currentVersion = metadata.currentVersion;
         this.version = metadata.version;
@@ -16,11 +17,12 @@ class Update {
     /** Downloads the updater package and installs it */
     async downloadAndInstall(onEvent) {
         const channel = new core.Channel();
-        if (onEvent != null) {
+        if (onEvent) {
             channel.onmessage = onEvent;
         }
         return core.invoke("plugin:updater|download_and_install", {
             onEvent: channel,
+            rid: this.rid,
         });
     }
 }
@@ -29,7 +31,9 @@ async function check(options) {
     if (options?.headers) {
         options.headers = Array.from(new Headers(options.headers).entries());
     }
-    return core.invoke("plugin:updater|check", { ...options }).then((meta) => (meta.available ? new Update(meta) : null));
+    return core.invoke("plugin:updater|check", {
+        ...options,
+    }).then((meta) => (meta.available ? new Update(meta) : null));
 }
 
 exports.Update = Update;
