@@ -13,6 +13,7 @@ class Update extends core.Resource {
         this.version = metadata.version;
         this.date = metadata.date;
         this.body = metadata.body;
+        this.rawJson = metadata.rawJson;
     }
     /** Download the updater package */
     async download(onEvent, options) {

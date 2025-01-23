@@ -36,6 +36,7 @@ interface UpdateMetadata {
     version: string;
     date?: string;
     body?: string;
+    rawJson: Record<string, unknown>;
 }
 /** Updater download event */
 type DownloadEvent = {
@@ -57,6 +58,7 @@ declare class Update extends Resource {
     version: string;
     date?: string;
     body?: string;
+    rawJson: Record<string, unknown>;
     private downloadedBytes?;
     constructor(metadata: UpdateMetadata);
     /** Download the updater package */
