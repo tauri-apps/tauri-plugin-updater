@@ -96,6 +96,7 @@ impl RemoteRelease {
 }
 
 pub type OnBeforeExit = Arc<dyn Fn() + Send + Sync + 'static>;
+pub type OnBeforeRequest = Arc<dyn Fn(ClientBuilder) -> ClientBuilder + Send + Sync + 'static>;
 pub type VersionComparator = Arc<dyn Fn(Version, RemoteRelease) -> bool + Send + Sync>;
 type MainThreadClosure = Box<dyn FnOnce() + Send + Sync + 'static>;
 type RunOnMainThread =
@@ -117,6 +118,7 @@ pub struct UpdaterBuilder {
     installer_args: Vec<OsString>,
     current_exe_args: Vec<OsString>,
     on_before_exit: Option<OnBeforeExit>,
+    configure_client: Option<OnBeforeRequest>,
 }
 
 impl UpdaterBuilder {
@@ -143,6 +145,7 @@ impl UpdaterBuilder {
             timeout: None,
             proxy: None,
             on_before_exit: None,
+            configure_client: None,
         }
     }
 
@@ -242,6 +245,19 @@ impl UpdaterBuilder {
         self
     }
 
+    /// Allows you to modify the `reqwest` client builder before the HTTP request is sent.
+    ///
+    /// Note that `reqwest` crate may be updated in minor releases of tauri-plugin-updater.
+    /// Therefore it's recommended to pin the plugin to at least a minor version when you're using `configure_client`.
+    ///
+    pub fn configure_client<F: Fn(ClientBuilder) -> ClientBuilder + Send + Sync + 'static>(
+        mut self,
+        f: F,
+    ) -> Self {
+        self.configure_client.replace(Arc::new(f));
+        self
+    }
+
     pub fn build(self) -> Result<Updater> {
         let endpoints = self
             .endpoints
@@ -285,6 +301,7 @@ impl UpdaterBuilder {
             headers: self.headers,
             extract_path,
             on_before_exit: self.on_before_exit,
+            configure_client: self.configure_client,
         })
     }
 }
@@ -319,6 +336,7 @@ pub struct Updater {
     headers: HeaderMap,
     extract_path: PathBuf,
     on_before_exit: Option<OnBeforeExit>,
+    configure_client: Option<OnBeforeRequest>,
     #[allow(unused)]
     installer_args: Vec<OsString>,
     #[allow(unused)]
@@ -382,6 +400,11 @@ impl Updater {
                 let proxy = reqwest::Proxy::all(proxy.as_str())?;
                 request = request.proxy(proxy);
             }
+
+            if let Some(ref configure_client) = self.configure_client {
+                request = configure_client(request);
+            }
+
             let response = request
                 .build()?
                 .get(url)
@@ -463,6 +486,7 @@ impl Updater {
                 headers: self.headers.clone(),
                 installer_args: self.installer_args.clone(),
                 current_exe_args: self.current_exe_args.clone(),
+                configure_client: self.configure_client.clone(),
             })
         } else {
             None
@@ -511,6 +535,7 @@ pub struct Update {
     installer_args: Vec<OsString>,
     #[allow(unused)]
     current_exe_args: Vec<OsString>,
+    configure_client: Option<OnBeforeRequest>,
 }
 
 impl Resource for Update {}
@@ -538,6 +563,9 @@ impl Update {
         if let Some(ref proxy) = self.proxy {
             let proxy = reqwest::Proxy::all(proxy.as_str())?;
             request = request.proxy(proxy);
+        }
+        if let Some(ref configure_client) = self.configure_client {
+            request = configure_client(request);
         }
         let response = request
             .build()?
