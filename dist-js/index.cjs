@@ -64,7 +64,9 @@ async function check(options) {
     }
     return await core.invoke('plugin:updater|check', {
         ...options
-    }).then((meta) => (meta.available ? new Update(meta) : null));
+    }).then((meta) => 
+    // TODO: Handle this in the rust side
+    meta.available ? new Update(meta) : null);
 }
 
 exports.Update = Update;
