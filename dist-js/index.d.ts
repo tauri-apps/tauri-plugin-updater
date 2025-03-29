@@ -31,7 +31,6 @@ interface DownloadOptions {
 }
 interface UpdateMetadata {
     rid: number;
-    available: boolean;
     currentVersion: string;
     version: string;
     date?: string;
@@ -53,6 +52,7 @@ type DownloadEvent = {
     event: 'Finished';
 };
 declare class Update extends Resource {
+    /** @deprecated This is always true, check if the return value is `null` instead when using {@linkcode check} */
     available: boolean;
     currentVersion: string;
     version: string;

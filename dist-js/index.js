@@ -6,7 +6,7 @@ import { Resource, Channel, invoke } from '@tauri-apps/api/core';
 class Update extends Resource {
     constructor(metadata) {
         super(metadata.rid);
-        this.available = metadata.available;
+        this.available = true;
         this.currentVersion = metadata.currentVersion;
         this.version = metadata.version;
         this.date = metadata.date;
@@ -60,11 +60,10 @@ async function check(options) {
     if (options?.headers) {
         options.headers = Array.from(new Headers(options.headers).entries());
     }
-    return await invoke('plugin:updater|check', {
+    const metadata = await invoke('plugin:updater|check', {
         ...options
-    }).then((meta) => 
-    // TODO: Handle this in the rust side
-    meta.available ? new Update(meta) : null);
+    });
+    return metadata ? new Update(metadata) : null;
 }
 
 export { Update, check };
