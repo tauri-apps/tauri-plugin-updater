@@ -15,6 +15,7 @@ class Update extends Resource {
     }
     /** Download the updater package */
     async download(onEvent, options) {
+        convertToRustHeaders(options);
         const channel = new Channel();
         if (onEvent) {
             channel.onmessage = onEvent;
@@ -40,6 +41,7 @@ class Update extends Resource {
     }
     /** Downloads the updater package and installs it */
     async downloadAndInstall(onEvent, options) {
+        convertToRustHeaders(options);
         const channel = new Channel();
         if (onEvent) {
             channel.onmessage = onEvent;
@@ -57,13 +59,19 @@ class Update extends Resource {
 }
 /** Check for updates, resolves to `null` if no updates are available */
 async function check(options) {
-    if (options?.headers) {
-        options.headers = Array.from(new Headers(options.headers).entries());
-    }
+    convertToRustHeaders(options);
     const metadata = await invoke('plugin:updater|check', {
         ...options
     });
     return metadata ? new Update(metadata) : null;
+}
+/**
+ * Converts the headers in options to be an {@linkcode Array<[string, string]>} which is what the Rust side expects
+ */
+function convertToRustHeaders(options) {
+    if (options?.headers) {
+        options.headers = Array.from(new Headers(options.headers).entries());
+    }
 }
 
 export { Update, check };

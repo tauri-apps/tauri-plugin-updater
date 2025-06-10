@@ -17,6 +17,7 @@ class Update extends core.Resource {
     }
     /** Download the updater package */
     async download(onEvent, options) {
+        convertToRustHeaders(options);
         const channel = new core.Channel();
         if (onEvent) {
             channel.onmessage = onEvent;
@@ -42,6 +43,7 @@ class Update extends core.Resource {
     }
     /** Downloads the updater package and installs it */
     async downloadAndInstall(onEvent, options) {
+        convertToRustHeaders(options);
         const channel = new core.Channel();
         if (onEvent) {
             channel.onmessage = onEvent;
@@ -59,13 +61,19 @@ class Update extends core.Resource {
 }
 /** Check for updates, resolves to `null` if no updates are available */
 async function check(options) {
-    if (options?.headers) {
-        options.headers = Array.from(new Headers(options.headers).entries());
-    }
+    convertToRustHeaders(options);
     const metadata = await core.invoke('plugin:updater|check', {
         ...options
     });
     return metadata ? new Update(metadata) : null;
+}
+/**
+ * Converts the headers in options to be an {@linkcode Array<[string, string]>} which is what the Rust side expects
+ */
+function convertToRustHeaders(options) {
+    if (options?.headers) {
+        options.headers = Array.from(new Headers(options.headers).entries());
+    }
 }
 
 exports.Update = Update;
