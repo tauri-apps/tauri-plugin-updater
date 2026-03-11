@@ -58,8 +58,10 @@ pub(crate) async fn check<R: Runtime>(
         builder = builder.timeout(Duration::from_millis(timeout));
     }
     if let Some(ref proxy) = proxy {
-        let url = Url::parse(proxy.as_str())?;
-        builder = builder.proxy(url);
+        if !proxy.is_empty() {
+            let url = Url::parse(proxy.as_str())?;
+            builder = builder.proxy(url);
+        }
     }
     if let Some(target) = target {
         builder = builder.target(target);
