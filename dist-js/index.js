@@ -28,13 +28,14 @@ class Update extends Resource {
         this.downloadedBytes = new Resource(downloadedBytesRid);
     }
     /** Install downloaded updater package */
-    async install() {
+    async install(options) {
         if (!this.downloadedBytes) {
             throw new Error('Update.install called before Update.download');
         }
         await invoke('plugin:updater|install', {
             updateRid: this.rid,
-            bytesRid: this.downloadedBytes.rid
+            bytesRid: this.downloadedBytes.rid,
+            ...options
         });
         // Don't need to call close, we did it in rust side already
         this.downloadedBytes = undefined;

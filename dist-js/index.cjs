@@ -30,13 +30,14 @@ class Update extends core.Resource {
         this.downloadedBytes = new core.Resource(downloadedBytesRid);
     }
     /** Install downloaded updater package */
-    async install() {
+    async install(options) {
         if (!this.downloadedBytes) {
             throw new Error('Update.install called before Update.download');
         }
         await core.invoke('plugin:updater|install', {
             updateRid: this.rid,
-            bytesRid: this.downloadedBytes.rid
+            bytesRid: this.downloadedBytes.rid,
+            ...options
         });
         // Don't need to call close, we did it in rust side already
         this.downloadedBytes = undefined;

@@ -33,6 +33,13 @@ interface DownloadOptions {
      */
     timeout?: number;
 }
+/** Options used when installing an update */
+interface InstallOptions {
+    /**
+     * If the Windows installer should restart the app after installed, default is `true`
+     */
+    restartAfterInstall?: boolean;
+}
 interface UpdateMetadata {
     rid: number;
     currentVersion: string;
@@ -68,9 +75,9 @@ declare class Update extends Resource {
     /** Download the updater package */
     download(onEvent?: (progress: DownloadEvent) => void, options?: DownloadOptions): Promise<void>;
     /** Install downloaded updater package */
-    install(): Promise<void>;
+    install(options?: InstallOptions): Promise<void>;
     /** Downloads the updater package and installs it */
-    downloadAndInstall(onEvent?: (progress: DownloadEvent) => void, options?: DownloadOptions): Promise<void>;
+    downloadAndInstall(onEvent?: (progress: DownloadEvent) => void, options?: DownloadOptions & InstallOptions): Promise<void>;
     close(): Promise<void>;
 }
 /** Check for updates, resolves to `null` if no updates are available */
