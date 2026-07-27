@@ -72,11 +72,25 @@ declare class Update extends Resource {
     rawJson: Record<string, unknown>;
     private downloadedBytes?;
     constructor(metadata: UpdateMetadata);
-    /** Download the updater package */
+    /** Download the updater package. Call {@linkcode install} later to install it */
     download(onEvent?: (progress: DownloadEvent) => void, options?: DownloadOptions): Promise<void>;
-    /** Install downloaded updater package */
+    /**
+     * Install downloaded updater package. Must be called after {@linkcode download}.
+     *
+     * ## Platform-specific:
+     *
+     * - **Windows:** This function exits the app after launching the updater installer successfully
+     * - **macOS / Linux:** You need to relaunch the app to run the newly install version
+     */
     install(options?: InstallOptions): Promise<void>;
-    /** Downloads the updater package and installs it */
+    /**
+     * Downloads the updater package and installs it
+     *
+     * ## Platform-specific:
+     *
+     * - **Windows:** This function exits the app after launching the updater installer successfully
+     * - **macOS / Linux:** You need to relaunch the app to run the newly install version
+     */
     downloadAndInstall(onEvent?: (progress: DownloadEvent) => void, options?: DownloadOptions & InstallOptions): Promise<void>;
     close(): Promise<void>;
 }

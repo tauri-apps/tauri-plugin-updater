@@ -15,7 +15,7 @@ class Update extends core.Resource {
         this.body = metadata.body;
         this.rawJson = metadata.rawJson;
     }
-    /** Download the updater package */
+    /** Download the updater package. Call {@linkcode install} later to install it */
     async download(onEvent, options) {
         convertToRustHeaders(options);
         const channel = new core.Channel();
@@ -29,7 +29,14 @@ class Update extends core.Resource {
         });
         this.downloadedBytes = new core.Resource(downloadedBytesRid);
     }
-    /** Install downloaded updater package */
+    /**
+     * Install downloaded updater package. Must be called after {@linkcode download}.
+     *
+     * ## Platform-specific:
+     *
+     * - **Windows:** This function exits the app after launching the updater installer successfully
+     * - **macOS / Linux:** You need to relaunch the app to run the newly install version
+     */
     async install(options) {
         if (!this.downloadedBytes) {
             throw new Error('Update.install called before Update.download');
@@ -42,7 +49,14 @@ class Update extends core.Resource {
         // Don't need to call close, we did it in rust side already
         this.downloadedBytes = undefined;
     }
-    /** Downloads the updater package and installs it */
+    /**
+     * Downloads the updater package and installs it
+     *
+     * ## Platform-specific:
+     *
+     * - **Windows:** This function exits the app after launching the updater installer successfully
+     * - **macOS / Linux:** You need to relaunch the app to run the newly install version
+     */
     async downloadAndInstall(onEvent, options) {
         convertToRustHeaders(options);
         const channel = new core.Channel();
