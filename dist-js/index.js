@@ -6,7 +6,6 @@ import { Resource, Channel, invoke } from '@tauri-apps/api/core';
 class Update extends Resource {
     constructor(metadata) {
         super(metadata.rid);
-        this.available = true;
         this.currentVersion = metadata.currentVersion;
         this.version = metadata.version;
         this.date = metadata.date;
