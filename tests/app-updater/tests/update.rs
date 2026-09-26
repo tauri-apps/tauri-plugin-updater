@@ -818,7 +818,8 @@ fn run_update_cases(
 
             if code != expected_exit_code {
                 panic!(
-                    "failed to run app bundled as {}, expected exit code {expected_exit_code}, got {code}", bundle_target.name()
+                    "failed to run app bundled as {}, expected exit code {expected_exit_code}, got {code}",
+                    bundle_target.name()
                 );
             }
             #[cfg(windows)]

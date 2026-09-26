@@ -17,28 +17,28 @@ use std::ffi::OsStr;
 
 use base64::Engine;
 use futures_util::StreamExt;
-use http::{header::ACCEPT, HeaderName};
+use http::{HeaderName, header::ACCEPT};
 use minisign_verify::{PublicKey, Signature};
 use percent_encoding::{AsciiSet, CONTROLS};
 use reqwest::{
-    header::{HeaderMap, HeaderValue},
     ClientBuilder, StatusCode,
+    header::{HeaderMap, HeaderValue},
 };
 use semver::Version;
-use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, de::Error as DeError};
 use tauri::{
+    AppHandle, Resource, Runtime,
     utils::{
         config::BundleType,
         platform::{bundle_type, current_exe},
     },
-    AppHandle, Resource, Runtime,
 };
 use time::OffsetDateTime;
 use url::Url;
 
 use crate::{
-    error::{Error, Result},
     Config,
+    error::{Error, Result},
 };
 
 const UPDATER_USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
@@ -937,8 +937,8 @@ impl Update {
     /// └── ...
     fn install_inner(&self, bytes: &[u8]) -> Result<()> {
         use windows_sys::{
-            w,
             Win32::UI::{Shell::ShellExecuteW, WindowsAndMessaging::SW_SHOW},
+            w,
         };
 
         let updater_type = self.extract(bytes)?;
@@ -1185,8 +1185,8 @@ impl Update {
                         let decoder = flate2::read::GzDecoder::new(archive);
                         let mut archive = tar::Archive::new(decoder);
                         for mut entry in archive.entries()?.flatten() {
-                            if let Ok(path) = entry.path() {
-                                if path.extension() == Some(OsStr::new("AppImage")) {
+                            if let Ok(path) = entry.path()
+                                && path.extension() == Some(OsStr::new("AppImage")) {
                                     // if something went wrong during the extraction, we should restore previous app
                                     if let Err(err) = entry.unpack(&self.extract_path) {
                                         std::fs::rename(tmp_app_image, &self.extract_path)?;
@@ -1195,7 +1195,6 @@ impl Update {
                                     // early finish we have everything we need here
                                     return Ok(());
                                 }
-                            }
                         }
                         // if we have not returned early we should restore the backup
                         std::fs::rename(tmp_app_image, &self.extract_path)?;
@@ -1289,20 +1288,17 @@ impl Update {
             .arg(install_arg)
             .arg(pkg_path)
             .status()
-        {
-            if status.success() {
+            && status.success() {
                 log::debug!("installed {pkg_path:?} with pkexec");
                 return Ok(());
             }
-        }
 
         // 2. Try zenity or kdialog for a graphical sudo experience
-        if let Ok(password) = self.get_password_graphically() {
-            if self.install_with_sudo(pkg_path, &password, install_cmd, install_arg)? {
+        if let Ok(password) = self.get_password_graphically()
+            && self.install_with_sudo(pkg_path, &password, install_cmd, install_arg)? {
                 log::debug!("installed {pkg_path:?} with GUI sudo");
                 return Ok(());
             }
-        }
 
         // 3. Final fallback: terminal sudo
         let status = std::process::Command::new("sudo")
@@ -1329,22 +1325,20 @@ impl Update {
             ])
             .output();
 
-        if let Ok(output) = zenity_result {
-            if output.status.success() {
+        if let Ok(output) = zenity_result
+            && output.status.success() {
                 return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
             }
-        }
 
         // Fall back to kdialog if zenity fails or isn't available
         let kdialog_result = std::process::Command::new("kdialog")
             .args(["--password", "Enter your password to install the update:"])
             .output();
 
-        if let Ok(output) = kdialog_result {
-            if output.status.success() {
+        if let Ok(output) = kdialog_result
+            && output.status.success() {
                 return Ok(String::from_utf8_lossy(&output.stdout).trim().to_string());
             }
-        }
 
         Err(Error::AuthenticationFailed)
     }
