@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // SPDX-License-Identifier: MIT
 
+#![cfg(any(target_os = "linux", target_os = "macos", windows))]
 #![allow(dead_code, unused_imports)]
 
 use std::{
