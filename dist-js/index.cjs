@@ -65,7 +65,6 @@ class Update extends core.Resource {
      * @param options The headers and the timeout to use for the download request.
      */
     async download(onEvent, options) {
-        convertToRustHeaders(options);
         const channel = new core.Channel();
         if (onEvent) {
             channel.onmessage = onEvent;
@@ -73,8 +72,12 @@ class Update extends core.Resource {
         const downloadedBytesRid = await core.invoke('plugin:updater|download', {
             onEvent: channel,
             rid: this.rid,
-            ...options
+            ...options,
+            headers: toRustHeaders(options?.headers)
         });
+        // release the bytes of a previous download, which would otherwise be kept
+        // in memory until the webview is destroyed
+        await this.downloadedBytes?.close().catch(() => { });
         this.downloadedBytes = new core.Resource(downloadedBytesRid);
     }
     /**
@@ -134,7 +137,6 @@ class Update extends core.Resource {
      * @param options The headers and the timeout to use for the download request, and the installation options.
      */
     async downloadAndInstall(onEvent, options) {
-        convertToRustHeaders(options);
         const channel = new core.Channel();
         if (onEvent) {
             channel.onmessage = onEvent;
@@ -142,7 +144,8 @@ class Update extends core.Resource {
         await core.invoke('plugin:updater|download_and_install', {
             onEvent: channel,
             rid: this.rid,
-            ...options
+            ...options,
+            headers: toRustHeaders(options?.headers)
         });
     }
     /**
@@ -184,19 +187,18 @@ class Update extends core.Resource {
  * @since 2.0.0
  */
 async function check(options) {
-    convertToRustHeaders(options);
     const metadata = await core.invoke('plugin:updater|check', {
-        ...options
+        ...options,
+        headers: toRustHeaders(options?.headers)
     });
     return metadata ? new Update(metadata) : null;
 }
 /**
- * Converts the headers in options to be an {@linkcode Array<[string, string]>} which is what the Rust side expects
+ * Converts headers to an {@linkcode Array<[string, string]>}, which is what the Rust side expects,
+ * without modifying the caller's options.
  */
-function convertToRustHeaders(options) {
-    if (options?.headers) {
-        options.headers = Array.from(new Headers(options.headers).entries());
-    }
+function toRustHeaders(headers) {
+    return headers ? Array.from(new Headers(headers).entries()) : undefined;
 }
 
 exports.Update = Update;
